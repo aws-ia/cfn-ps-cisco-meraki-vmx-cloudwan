@@ -1,12 +1,10 @@
----
 AWSTemplateFormatVersion: 2010-09-09
-Description: >-
-  Main stack - Deploys two vMX instances in different Availability Zones in an existing VPC along with an AWS Cloud WAN core network.
-  **WARNING** You will be billed for the AWS resources used if you create a stack from this template.(qs-1srtkbc43)
+Description: Main stack - Deploys two vMX instances in different Availability Zones in an existing VPC along with an AWS Cloud WAN core network. **WARNING** You will be billed for the AWS resources used
+  if you create a stack from this template.(qs-1srtkbc43)
 Metadata:
   QuickStartDocumentation:
-    EntrypointName: "Launch into an existing VPC"
-    Order: "2"
+    EntrypointName: Launch into an existing VPC
+    Order: '2'
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -84,7 +82,7 @@ Metadata:
       GlobalNetworkName:
         default: Cloud WAN global network name
       MerakiEventBusName:
-        default: "MerakiEventBus"
+        default: MerakiEventBus
 Parameters:
   MerakiOrgID:
     Description: Meraki organization ID.
@@ -127,10 +125,10 @@ Parameters:
     Default: change_to_match_the_token_from_meraki_dashboard
   AZ1PublicSubnetID:
     Description: ID of the public subnet in Availability Zone 1 of the existing VPC (e.g., `subnet-z0376dab`).
-    Type: "AWS::EC2::Subnet::Id"
+    Type: AWS::EC2::Subnet::Id
   AZ2PublicSubnetID:
     Description: ID of the public subnet in Availability Zone 2 of the existing VPC (e.g., `subnet-a29c3d84`).
-    Type: "AWS::EC2::Subnet::Id"
+    Type: AWS::EC2::Subnet::Id
   VPCID:
     Description: ID of the existing VPC for deployment (e.g., `vpc-0343606e`).
     Type: AWS::EC2::VPC::Id
@@ -138,48 +136,29 @@ Parameters:
     Description: ID of the existing VPC main route table (e.g., `rt-0343606e`).
     Type: String
   QSS3BucketName:
-    AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
-    ConstraintDescription:
-      The Quick Start bucket name can include numbers, lowercase
-      letters, uppercase letters, and hyphens (-). It cannot start or end with a
-      hyphen (-).
+    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
+    ConstraintDescription: The Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).
     Default: aws-ia-us-east-1
-    Description:
-      Name of the S3 bucket for your copy of the Quick Start assets.
-      Keep the default name unless you are customizing the template.
-      Changing the name updates code references to point to a new Quick
-      Start location. This name can include numbers, lowercase letters,
-      uppercase letters, and hyphens, but do not start or end with a hyphen (-).
-      See https://aws-quickstart.github.io/option1.html.
+    Description: Name of the S3 bucket for your copy of the Quick Start assets. Keep the default name unless you are customizing the template. Changing the name updates code references to point to a new
+      Quick Start location. This name can include numbers, lowercase letters, uppercase letters, and hyphens, but do not start or end with a hyphen (-). See https://aws-quickstart.github.io/option1.html.
     Type: String
   QSS3BucketRegion:
-    Default: 'us-east-1'
-    Description: 'AWS Region where the Quick Start S3 bucket (QSS3BucketName) is
-    hosted. Keep the default Region unless you are customizing the template.
-    Changing this Region updates code references to point to a new Quick Start location.
-    When using your own bucket, specify the Region.
-    See https://aws-quickstart.github.io/option1.html.'
+    Default: us-east-1
+    Description: AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. Keep the default Region unless you are customizing the template. Changing this Region updates code references to point
+      to a new Quick Start location. When using your own bucket, specify the Region. See https://aws-quickstart.github.io/option1.html.
     Type: String
   QSS3KeyPrefix:
-    AllowedPattern: '^[0-9a-zA-Z-/]*$'
-    ConstraintDescription:
-      The Quick Start S3 key prefix can include numbers, lowercase letters,
-      uppercase letters, hyphens (-), and forward slashes (/). The prefix should
-      end with a forward slash (/).
+    AllowedPattern: ^[0-9a-zA-Z-/]*$
+    ConstraintDescription: The Quick Start S3 key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slashes (/). The prefix should end with a forward slash (/).
     Default: cfn-ps-cisco-meraki-vmx-cloudwan/
-    Description:
-      S3 key prefix used to simulate a directory for your copy of the
-      Quick Start assets. Keep the default prefix unless you're customizing
-      the template. Changing this prefix updates code references to point to
-      a new Quick Start location. This prefix can include numbers, lowercase
-      letters, uppercase letters, hyphens (-), and forward slashes (/). End with
-      a forward slash. See https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
+    Description: S3 key prefix used to simulate a directory for your copy of the Quick Start assets. Keep the default prefix unless you're customizing the template. Changing this prefix updates code references
+      to point to a new Quick Start location. This prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slashes (/). End with a forward slash. See https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
       and https://aws-quickstart.github.io/option1.html.
     Type: String
   KeyPairName:
     Description: EC2 key pair name.
     ConstraintDescription: Must be the name of an existing EC2 key pair. vMX instances launch with this key pair.
-    Type: "AWS::EC2::KeyPair::KeyName"
+    Type: AWS::EC2::KeyPair::KeyName
   LambdaRate:
     Description: How often the CloudWatch Events rule runs. The rule invokes AWS Lambda to update the VPC and transit gateway route tables.
     Default: rate(10 minutes)
@@ -190,37 +169,49 @@ Parameters:
     Type: String
   GlobalNetworkName:
     Description: AWS Cloud WAN global network name.
-    Default: "meraki-gn"
+    Default: meraki-gn
     Type: String
   AmazonASNRange:
     Description: Autonomous System Number (ASN) for Cloud WAN network.
-    Default: "65000-65500"
+    Default: 65000-65500
     Type: String
   MerakiEventBusName:
     Description: Name of CustomEventBus for EventBridge.
-    Default: "MerakiEventBus"
+    Default: MerakiEventBus
     Type: String
-
 Conditions:
-  UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-ia-us-east-1']
-  1vMXCondition: !Or
-    - !Equals
-      - !Ref 'NumberOfvMXs'
-      - '1'
-    - !Condition 2vMXCondition
-  2vMXCondition: !Equals
-    - !Ref 'NumberOfvMXs'
-    - '2'
+  UsingDefaultBucket:
+    Fn::Equals:
+      - Ref: QSS3BucketName
+      - aws-ia-us-east-1
+  1vMXCondition:
+    Fn::Or:
+      - Fn::Equals:
+          - Ref: NumberOfvMXs
+          - '1'
+      - Condition: 2vMXCondition
+  2vMXCondition:
+    Fn::Equals:
+      - Ref: NumberOfvMXs
+      - '2'
 Resources:
   VMX1Stack:
     Condition: 1vMXCondition
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL:
-        !Sub
+        Fn::Sub:
           - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/cfn-ps-cisco-meraki-sd-wan-vmx/templates/quickstart-cisco-meraki-sdwan-vmx-instance.yaml
-          - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
-            S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+          - S3Region:
+              Fn::If:
+                - UsingDefaultBucket
+                - Ref: AWS::Region
+                - Ref: QSS3BucketRegion
+            S3Bucket:
+              Fn::If:
+                - UsingDefaultBucket
+                - Fn::Sub: ${QSS3BucketName}-${AWS::Region}
+                - Ref: QSS3BucketName
       Parameters:
         InstanceType:
           Ref: InstanceType
@@ -232,16 +223,23 @@ Resources:
           Ref: vMX1Token
         vMXMerakiNetworkTag:
           Ref: vMX1MerakiNetworkTag
-
   VMX2Stack:
     Condition: 2vMXCondition
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL:
-        !Sub
+        Fn::Sub:
           - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/cfn-ps-cisco-meraki-sd-wan-vmx/templates/quickstart-cisco-meraki-sdwan-vmx-instance.yaml
-          - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
-            S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+          - S3Region:
+              Fn::If:
+                - UsingDefaultBucket
+                - Ref: AWS::Region
+                - Ref: QSS3BucketRegion
+            S3Bucket:
+              Fn::If:
+                - UsingDefaultBucket
+                - Fn::Sub: ${QSS3BucketName}-${AWS::Region}
+                - Ref: QSS3BucketName
       Parameters:
         InstanceType:
           Ref: InstanceType
@@ -253,145 +251,200 @@ Resources:
           Ref: vMX2Token
         vMXMerakiNetworkTag:
           Ref: vMX2MerakiNetworkTag
-
   DeleteStack:
     Type: AWS::CloudFormation::Stack
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
       TemplateURL:
-        !Sub
+        Fn::Sub:
           - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/quickstart-cisco-meraki-sdwan-vmx-delete.template.yaml
-          - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
-            S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+          - S3Region:
+              Fn::If:
+                - UsingDefaultBucket
+                - Ref: AWS::Region
+                - Ref: QSS3BucketRegion
+            S3Bucket:
+              Fn::If:
+                - UsingDefaultBucket
+                - Fn::Sub: ${QSS3BucketName}-${AWS::Region}
+                - Ref: QSS3BucketName
       Parameters:
         MerakiEventBusName:
           Ref: MerakiEventBusName
-        #Need to add either global network property or a tag to pass along to delete step function
-
   StepFunctionStack:
     Type: AWS::CloudFormation::Stack
     DependsOn: DeleteStack
     Properties:
       TemplateURL:
-        !Sub
+        Fn::Sub:
           - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/quickstart-cisco-meraki-sdwan-vmx-cw-stepfunction.template.yaml
-          - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
-            S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+          - S3Region:
+              Fn::If:
+                - UsingDefaultBucket
+                - Ref: AWS::Region
+                - Ref: QSS3BucketRegion
+            S3Bucket:
+              Fn::If:
+                - UsingDefaultBucket
+                - Fn::Sub: ${QSS3BucketName}-${AWS::Region}
+                - Ref: QSS3BucketName
       Parameters:
-          QSS3BucketName:
-            Ref: QSS3BucketName
-          QSS3KeyPrefix:
-            Ref: QSS3KeyPrefix
-          QSS3BucketRegion:
-            Ref: QSS3BucketRegion
-          GlobalNetworkName:
-            !Sub ['${GlobalNetworkName}-${id}', {id: !Select [2, !Split ['/', !Ref AWS::StackId]]}]
-          MerakiEventBusName:
-            Ref: MerakiEventBusName
-          AvailabilityZone1SubnetID:
-            Ref: AZ1PublicSubnetID
-          AvailabilityZone2SubnetID:
-            Ref: AZ2PublicSubnetID
-          VPCID:
-            Ref: VPCID
-          AmazonASNRange:
-            Ref: AmazonASNRange
-
+        QSS3BucketName:
+          Ref: QSS3BucketName
+        QSS3KeyPrefix:
+          Ref: QSS3KeyPrefix
+        QSS3BucketRegion:
+          Ref: QSS3BucketRegion
+        GlobalNetworkName:
+          Fn::Sub:
+            - ${GlobalNetworkName}-${id}
+            - id:
+                Fn::Select:
+                  - 2
+                  - Fn::Split:
+                      - /
+                      - Ref: AWS::StackId
+        MerakiEventBusName:
+          Ref: MerakiEventBusName
+        AvailabilityZone1SubnetID:
+          Ref: AZ1PublicSubnetID
+        AvailabilityZone2SubnetID:
+          Ref: AZ2PublicSubnetID
+        VPCID:
+          Ref: VPCID
+        AmazonASNRange:
+          Ref: AmazonASNRange
   CustomResourceStack:
     Type: AWS::CloudFormation::Stack
     DependsOn: StepFunctionStack
     Properties:
       TemplateURL:
-        !Sub
+        Fn::Sub:
           - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/quickstart-cisco-meraki-sdwan-vmx-cw-vpc-attachment-custom-resource.template.yaml
-          - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
-            S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+          - S3Region:
+              Fn::If:
+                - UsingDefaultBucket
+                - Ref: AWS::Region
+                - Ref: QSS3BucketRegion
+            S3Bucket:
+              Fn::If:
+                - UsingDefaultBucket
+                - Fn::Sub: ${QSS3BucketName}-${AWS::Region}
+                - Ref: QSS3BucketName
       Parameters:
-          AvailabilityZone1SubnetID:
-            Ref: AZ1PublicSubnetID
-          AvailabilityZone2SubnetID:
-            Ref: AZ2PublicSubnetID
-          VPCID:
-            Ref: VPCID
-          # AmazonASNRange:
-          #   Ref: AmazonASNRange
-          MerakiEventBusName:
-            Ref: MerakiEventBusName
-          GlobalNetworkName:
-            !Sub ['${GlobalNetworkName}-${id}', {id: !Select [2, !Split ['/', !Ref AWS::StackId]]}]
-          BaseRegionName:
-            Ref: AWS::Region
-
+        AvailabilityZone1SubnetID:
+          Ref: AZ1PublicSubnetID
+        AvailabilityZone2SubnetID:
+          Ref: AZ2PublicSubnetID
+        VPCID:
+          Ref: VPCID
+        MerakiEventBusName:
+          Ref: MerakiEventBusName
+        GlobalNetworkName:
+          Fn::Sub:
+            - ${GlobalNetworkName}-${id}
+            - id:
+                Fn::Select:
+                  - 2
+                  - Fn::Split:
+                      - /
+                      - Ref: AWS::StackId
+        BaseRegionName:
+          Ref: AWS::Region
   MerakiLambdaStack:
     DependsOn:
-    - StepFunctionStack
-    - CustomResourceStack
+      - StepFunctionStack
+      - CustomResourceStack
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL:
-        !Sub
+        Fn::Sub:
           - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/quickstart-cisco-meraki-sdwan-vmx-cw-lambda.template.yaml
-          - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
-            S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+          - S3Region:
+              Fn::If:
+                - UsingDefaultBucket
+                - Ref: AWS::Region
+                - Ref: QSS3BucketRegion
+            S3Bucket:
+              Fn::If:
+                - UsingDefaultBucket
+                - Fn::Sub: ${QSS3BucketName}-${AWS::Region}
+                - Ref: QSS3BucketName
       Parameters:
-          AvailabilityZone1SubnetID:
-            Ref: AZ1PublicSubnetID
-          AvailabilityZone2SubnetID:
-            Ref: AZ2PublicSubnetID
-          VPCID:
-            Ref: VPCID
-          QSS3BucketName:
-            Ref: QSS3BucketName
-          QSS3KeyPrefix:
-            Ref: QSS3KeyPrefix
-          QSS3BucketRegion:
-            Ref: QSS3BucketRegion
-          SDWANVPCRTID:
-            Ref: VPCRouteTableID
-          MerakiAPIKey:
-            Ref: MerakiAPIKey
-          MerakiOrgID:
-            Ref: MerakiOrgID
-          vMX1MerakiNetworkTag:
-            Ref: vMX1MerakiNetworkTag
-          vMX2MerakiNetworkTag:
-            Ref: vMX2MerakiNetworkTag
-          LambdaRate:
-            Ref: LambdaRate
-          MerakiEventBusName:
-            Ref: MerakiEventBusName
-          BaseRegionName:
-            Ref: AWS::Region
-          GlobalNetworkName:
-            !Sub ['${GlobalNetworkName}-${id}', {id: !Select [2, !Split ['/', !Ref AWS::StackId]]}]
-
-
+        AvailabilityZone1SubnetID:
+          Ref: AZ1PublicSubnetID
+        AvailabilityZone2SubnetID:
+          Ref: AZ2PublicSubnetID
+        VPCID:
+          Ref: VPCID
+        QSS3BucketName:
+          Ref: QSS3BucketName
+        QSS3KeyPrefix:
+          Ref: QSS3KeyPrefix
+        QSS3BucketRegion:
+          Ref: QSS3BucketRegion
+        SDWANVPCRTID:
+          Ref: VPCRouteTableID
+        MerakiAPIKey:
+          Ref: MerakiAPIKey
+        MerakiOrgID:
+          Ref: MerakiOrgID
+        vMX1MerakiNetworkTag:
+          Ref: vMX1MerakiNetworkTag
+        vMX2MerakiNetworkTag:
+          Ref: vMX2MerakiNetworkTag
+        LambdaRate:
+          Ref: LambdaRate
+        MerakiEventBusName:
+          Ref: MerakiEventBusName
+        BaseRegionName:
+          Ref: AWS::Region
+        GlobalNetworkName:
+          Fn::Sub:
+            - ${GlobalNetworkName}-${id}
+            - id:
+                Fn::Select:
+                  - 2
+                  - Fn::Split:
+                      - /
+                      - Ref: AWS::StackId
 Outputs:
   VPCID:
     Description: ID of the deployed SD-WAN VPC.
-    Value: !Ref VPCID
+    Value:
+      Ref: VPCID
   vMX1InstanceID:
     Description: First vMX instance ID.
     Value:
       Fn::GetAtt:
-      - VMX1Stack
-      - Outputs.vMXInstanceID
+        - VMX1Stack
+        - Outputs.vMXInstanceID
   vMX2InstanceID:
     Description: Second vMX instance ID.
     Value:
       Fn::GetAtt:
-      - VMX2Stack
-      - Outputs.vMXInstanceID
+        - VMX2Stack
+        - Outputs.vMXInstanceID
   MerakiEventBusName:
     Description: The Meraki event bus name.
-    Value: !Ref MerakiEventBusName
+    Value:
+      Ref: MerakiEventBusName
   GlobalNetworkName:
     Description: The Meraki Cloud WAN global network name.
-    Value: !Sub ['${GlobalNetworkName}-${id}', {id: !Select [2, !Split ['/', !Ref AWS::StackId]]}]
+    Value:
+      Fn::Sub:
+        - ${GlobalNetworkName}-${id}
+        - id:
+            Fn::Select:
+              - 2
+              - Fn::Split:
+                  - /
+                  - Ref: AWS::StackId
   BaseRegionName:
     Description: The base Region name for the Meraki Cloud WAN Quick Start.
-    Value: !Ref AWS::Region
+    Value:
+      Ref: AWS::Region
   Postdeployment:
     Description: See the deployment guide for postdeployment steps.
     Value: https://aws-quickstart.github.io/quickstart-cisco-meraki-vmx-cloudwan/

@@ -1,12 +1,10 @@
----
 AWSTemplateFormatVersion: 2010-09-09
-Description: >-
-  Main stack - This template deploys two vMX instances in different Availability Zones along with a new SD-WAN VPC and an AWS Cloud WAN global network.
-  **WARNING** You will be billed for the AWS resources used if you create a stack from this template. (qs-1srtkbc1c)
+Description: Main stack - This template deploys two vMX instances in different Availability Zones along with a new SD-WAN VPC and an AWS Cloud WAN global network. **WARNING** You will be billed for the
+  AWS resources used if you create a stack from this template. (qs-1srtkbc1c)
 Metadata:
   QuickStartDocumentation:
-    EntrypointName: "Launch into a new VPC"
-    Order: "1"
+    EntrypointName: Launch into a new VPC
+    Order: '1'
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - Label:
@@ -84,7 +82,7 @@ Metadata:
       GlobalNetworkName:
         default: Cloud WAN global network name
       MerakiEventBusName:
-        default: "MerakiEventBus"
+        default: MerakiEventBus
 Parameters:
   MerakiOrgID:
     Description: Meraki organization ID.
@@ -139,48 +137,29 @@ Parameters:
     Description: CIDR block for public subnet 2, located in Availability Zone 2.
     Type: String
   QSS3BucketName:
-    AllowedPattern: '^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$'
-    ConstraintDescription:
-      The Quick Start bucket name can include numbers, lowercase
-      letters, uppercase letters, and hyphens (-). It cannot start or end with a
-      hyphen (-).
+    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
+    ConstraintDescription: The Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).
     Default: aws-ia-us-east-1
-    Description:
-      Name of the S3 bucket for your copy of the Quick Start assets.
-      Keep the default name unless you are customizing the template.
-      Changing the name updates code references to point to a new Quick
-      Start location. This name can include numbers, lowercase letters,
-      uppercase letters, and hyphens, but do not start or end with a hyphen (-).
-      See https://aws-quickstart.github.io/option1.html.
+    Description: Name of the S3 bucket for your copy of the Quick Start assets. Keep the default name unless you are customizing the template. Changing the name updates code references to point to a new
+      Quick Start location. This name can include numbers, lowercase letters, uppercase letters, and hyphens, but do not start or end with a hyphen (-). See https://aws-quickstart.github.io/option1.html.
     Type: String
   QSS3BucketRegion:
-    Default: 'us-east-1'
-    Description: 'AWS Region where the Quick Start S3 bucket (QSS3BucketName) is
-    hosted. Keep the default Region unless you are customizing the template.
-    Changing this Region updates code references to point to a new Quick Start location.
-    When using your own bucket, specify the Region.
-    See https://aws-quickstart.github.io/option1.html.'
+    Default: us-east-1
+    Description: AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. Keep the default Region unless you are customizing the template. Changing this Region updates code references to point
+      to a new Quick Start location. When using your own bucket, specify the Region. See https://aws-quickstart.github.io/option1.html.
     Type: String
   QSS3KeyPrefix:
-    AllowedPattern: '^[0-9a-zA-Z-/]*$'
-    ConstraintDescription:
-      The Quick Start S3 key prefix can include numbers, lowercase letters,
-      uppercase letters, hyphens (-), and forward slashes (/). The prefix should
-      end with a forward slash (/).
+    AllowedPattern: ^[0-9a-zA-Z-/]*$
+    ConstraintDescription: The Quick Start S3 key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slashes (/). The prefix should end with a forward slash (/).
     Default: cfn-ps-cisco-meraki-vmx-cloudwan/
-    Description:
-      S3 key prefix used to simulate a directory for your copy of the
-      Quick Start assets. Keep the default prefix unless you're customizing
-      the template. Changing this prefix updates code references to point to
-      a new Quick Start location. This prefix can include numbers, lowercase
-      letters, uppercase letters, hyphens (-), and forward slashes (/). End with
-      a forward slash. See https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
+    Description: S3 key prefix used to simulate a directory for your copy of the Quick Start assets. Keep the default prefix unless you're customizing the template. Changing this prefix updates code references
+      to point to a new Quick Start location. This prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slashes (/). End with a forward slash. See https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingMetadata.html
       and https://aws-quickstart.github.io/option1.html.
     Type: String
   KeyPairName:
     Description: EC2 key pair name.
     ConstraintDescription: Must be the name of an existing EC2 key pair. vMX instances launch with this key pair.
-    Type: "AWS::EC2::KeyPair::KeyName"
+    Type: AWS::EC2::KeyPair::KeyName
   LambdaRate:
     Description: How often the CloudWatch Events rule runs. The rule invokes AWS Lambda to update the VPC and transit gateway route tables.
     Default: rate(10 minutes)
@@ -199,50 +178,71 @@ Parameters:
     Default: vMX2
   GlobalNetworkName:
     Description: AWS Cloud WAN global network name.
-    Default: "meraki-gn"
+    Default: meraki-gn
     Type: String
   AmazonASNRange:
     Description: Autonomous System Number (ASN) for Cloud WAN network.
-    Default: "65000-65500"
+    Default: 65000-65500
     Type: String
   MerakiEventBusName:
     Description: Name of CustomEventBus for EventBridge.
-    Default: "MerakiEventBus"
+    Default: MerakiEventBus
     Type: String
-
-
 Conditions:
-  UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-ia-us-east-1']
-
+  UsingDefaultBucket:
+    Fn::Equals:
+      - Ref: QSS3BucketName
+      - aws-ia-us-east-1
 Resources:
   VPCStack:
-    Type: 'AWS::CloudFormation::Stack'
+    Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL:
-        !Sub
+        Fn::Sub:
           - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/cfn-ps-aws-vpc/templates/aws-vpc.template
-          - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
-            S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+          - S3Region:
+              Fn::If:
+                - UsingDefaultBucket
+                - Ref: AWS::Region
+                - Ref: QSS3BucketRegion
+            S3Bucket:
+              Fn::If:
+                - UsingDefaultBucket
+                - Fn::Sub: ${QSS3BucketName}-${AWS::Region}
+                - Ref: QSS3BucketName
       Parameters:
-        AvailabilityZones: !Join
-          - ','
-          - !Ref AvailabilityZones
-        KeyPairName: !Ref KeyPairName
-        NumberOfAZs: !Ref NumberOfvMXs
-        PublicSubnet1CIDR: !Ref AvailabilityZone1CIDR
-        PublicSubnet2CIDR: !Ref AvailabilityZone2CIDR
-        VPCCIDR: !Ref VPCCIDR
+        AvailabilityZones:
+          Fn::Join:
+            - ','
+            - Ref: AvailabilityZones
+        KeyPairName:
+          Ref: KeyPairName
+        NumberOfAZs:
+          Ref: NumberOfvMXs
+        PublicSubnet1CIDR:
+          Ref: AvailabilityZone1CIDR
+        PublicSubnet2CIDR:
+          Ref: AvailabilityZone2CIDR
+        VPCCIDR:
+          Ref: VPCCIDR
         CreatePrivateSubnets: false
-
   WorkloadStack:
     DependsOn: VPCStack
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL:
-        !Sub
+        Fn::Sub:
           - https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/quickstart-cisco-meraki-sdwan-vmx-cw-workload.template.yaml
-          - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
-            S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
+          - S3Region:
+              Fn::If:
+                - UsingDefaultBucket
+                - Ref: AWS::Region
+                - Ref: QSS3BucketRegion
+            S3Bucket:
+              Fn::If:
+                - UsingDefaultBucket
+                - Fn::Sub: ${QSS3BucketName}-${AWS::Region}
+                - Ref: QSS3BucketName
       Parameters:
         MerakiOrgID:
           Ref: MerakiOrgID
@@ -264,20 +264,20 @@ Resources:
           Ref: vMX2MerakiNetworkTag
         AZ1PublicSubnetID:
           Fn::GetAtt:
-          - VPCStack
-          - Outputs.PublicSubnet1ID
+            - VPCStack
+            - Outputs.PublicSubnet1ID
         AZ2PublicSubnetID:
           Fn::GetAtt:
-          - VPCStack
-          - Outputs.PublicSubnet2ID
+            - VPCStack
+            - Outputs.PublicSubnet2ID
         VPCID:
           Fn::GetAtt:
-          - VPCStack
-          - Outputs.VPCID
+            - VPCStack
+            - Outputs.VPCID
         VPCRouteTableID:
           Fn::GetAtt:
-          - VPCStack
-          - Outputs.PublicSubnetRouteTable
+            - VPCStack
+            - Outputs.PublicSubnetRouteTable
         AmazonASNRange:
           Ref: AmazonASNRange
         LambdaRate:
@@ -290,40 +290,37 @@ Resources:
           Ref: QSS3KeyPrefix
         MerakiEventBusName:
           Ref: MerakiEventBusName
-
 Outputs:
   VPCID:
     Description: ID of the deployed SD-WAN VPC.
     Value:
       Fn::GetAtt:
-      - VPCStack
-      - Outputs.VPCID
+        - VPCStack
+        - Outputs.VPCID
   vMX1InstanceID:
     Description: First vMX instance ID.
     Value:
       Fn::GetAtt:
-      - WorkloadStack
-      - Outputs.vMX1InstanceID
+        - WorkloadStack
+        - Outputs.vMX1InstanceID
   vMX2InstanceID:
     Description: Second vMX instance ID.
     Value:
       Fn::GetAtt:
-      - WorkloadStack
-      - Outputs.vMX2InstanceID
+        - WorkloadStack
+        - Outputs.vMX2InstanceID
   MerakiEventBusName:
     Description: The Meraki event bus name.
-    Value: !Ref MerakiEventBusName
-  # This will only display the prefix, not useful.  The actual name is displayed in the workload stack
-  # GlobalNetworkName:
-  #   Description: The Meraki Event Bus Name
-  #   Value: !Ref GlobalNetworkName
+    Value:
+      Ref: MerakiEventBusName
   BaseRegionName:
     Description: The base Region name for the Meraki Cloud WAN Quick Start.
-    Value: !Ref AWS::Region
+    Value:
+      Ref: AWS::Region
   AmazonASNRange:
     Description: The Meraki Cloud WAN ASN range.
-    Value: !Ref AmazonASNRange
-
+    Value:
+      Ref: AmazonASNRange
   Postdeployment:
     Description: See the deployment guide for postdeployment steps.
     Value: https://aws-quickstart.github.io/quickstart-cisco-meraki-vmx-cloudwan/

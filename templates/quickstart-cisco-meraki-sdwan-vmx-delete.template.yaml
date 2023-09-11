@@ -1,9 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
-Description: >
-  This stack is used to create the EventBus as well as all the components needed to delete Cloud WAN resources.  This stack is set to remain after deletion of the parent stack so that the long running delete state machine can complete running.  This stack must manually be deleted after no Cloud WN resources remain.
-
-
+Description: "This stack is used to create the EventBus as well as all the components needed to delete Cloud WAN resources.  This stack is set to remain after deletion of the parent stack so that the long\
+  \ running delete state machine can complete running.  This stack must manually be deleted after no Cloud WN resources remain.\n"
 Globals:
   Function:
     Handler: app.lambda_handler
@@ -11,54 +9,39 @@ Globals:
     Timeout: 900
 Parameters:
   QSS3BucketName:
-    AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
-    ConstraintDescription: "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    AllowedPattern: ^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$
+    ConstraintDescription: Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).
     Default: aws-ia-us-east-1
-    Description: "S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Description: S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-).
     Type: String
   QSS3KeyPrefix:
-    AllowedPattern: "^[0-9a-zA-Z-/]*$"
-    ConstraintDescription: "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
+    AllowedPattern: ^[0-9a-zA-Z-/]*$
+    ConstraintDescription: Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).
     Default: cfn-ps-cisco-meraki-vmx-cloudwan/
-    Description: "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
+    Description: S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/).
     Type: String
   QSS3BucketRegion:
-    Default: 'us-east-1'
-    Description: 'The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.'
+    Default: us-east-1
+    Description: The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value.
     Type: String
-
   MerakiEventBusName:
     Description: Name of CustomEventBus for EventBridge
     Type: String
-
-  
-
 Conditions:
-  UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-ia-us-east-1']
-
-
+  UsingDefaultBucket:
+    Fn::Equals:
+      - Ref: QSS3BucketName
+      - aws-ia-us-east-1
 Resources:
-
   MerakiEventBus:
     Type: AWS::Events::EventBus
     Properties:
-      Name: !Ref MerakiEventBusName
-
-##
-##
-## Delete State Machine Resources
-
+      Name:
+        Ref: MerakiEventBusName
   CloudWanDeleteStepFunction:
     Type: AWS::Serverless::StateMachine
-    DependsOn: 
-    # implicit DependsON with !GetAtt <function>
-    #- DeleteAttachmentsDSMFunction
-    #- DeleteCoreDSMFunction
-    #- DeleteGlobalDSMFunction
-    #- DescribeNetworkDSMFunction
-    #- GetAttachmentStatusDSMFunction
-    #- GetCoreStatusDSMFunction
-    - MerakiEventBus
+    DependsOn:
+      - MerakiEventBus
     Properties:
       Definition:
         Comment: A description of my state machine
@@ -68,34 +51,40 @@ Resources:
             Type: Task
             Resource: arn:aws:states:::lambda:invoke
             Parameters:
-              Payload.$: "$"
-              FunctionName: !GetAtt DescribeNetworkDSMFunction.Arn
+              Payload.$: $
+              FunctionName:
+                Fn::GetAtt:
+                  - DescribeNetworkDSMFunction
+                  - Arn
             Retry:
-            - ErrorEquals:
-              - Lambda.ServiceException
-              - Lambda.AWSLambdaException
-              - Lambda.SdkClientException
-              IntervalSeconds: 2
-              MaxAttempts: 6
-              BackoffRate: 2
+              - ErrorEquals:
+                  - Lambda.ServiceException
+                  - Lambda.AWSLambdaException
+                  - Lambda.SdkClientException
+                IntervalSeconds: 2
+                MaxAttempts: 6
+                BackoffRate: 2
             Next: Delete Attachments
-            ResultPath: "$.networkDetails"
+            ResultPath: $.networkDetails
           Delete Attachments:
             Type: Task
             Resource: arn:aws:states:::lambda:invoke
             Parameters:
-              Payload.$: "$"
-              FunctionName: !GetAtt DeleteAttachmentsDSMFunction.Arn
+              Payload.$: $
+              FunctionName:
+                Fn::GetAtt:
+                  - DeleteAttachmentsDSMFunction
+                  - Arn
             Retry:
-            - ErrorEquals:
-              - Lambda.ServiceException
-              - Lambda.AWSLambdaException
-              - Lambda.SdkClientException
-              IntervalSeconds: 2
-              MaxAttempts: 6
-              BackoffRate: 2
+              - ErrorEquals:
+                  - Lambda.ServiceException
+                  - Lambda.AWSLambdaException
+                  - Lambda.SdkClientException
+                IntervalSeconds: 2
+                MaxAttempts: 6
+                BackoffRate: 2
             Next: Wait 1 minute
-            ResultPath: "$.attachmentsDeleteExecuted"
+            ResultPath: $.attachmentsDeleteExecuted
           Wait 1 minute:
             Type: Wait
             Seconds: 60
@@ -104,41 +93,47 @@ Resources:
             Type: Task
             Resource: arn:aws:states:::lambda:invoke
             Parameters:
-              Payload.$: "$"
-              FunctionName: !GetAtt GetAttachmentStatusDSMFunction.Arn
+              Payload.$: $
+              FunctionName:
+                Fn::GetAtt:
+                  - GetAttachmentStatusDSMFunction
+                  - Arn
             Retry:
-            - ErrorEquals:
-              - Lambda.ServiceException
-              - Lambda.AWSLambdaException
-              - Lambda.SdkClientException
-              IntervalSeconds: 2
-              MaxAttempts: 6
-              BackoffRate: 2
+              - ErrorEquals:
+                  - Lambda.ServiceException
+                  - Lambda.AWSLambdaException
+                  - Lambda.SdkClientException
+                IntervalSeconds: 2
+                MaxAttempts: 6
+                BackoffRate: 2
             Next: Attachments Deleted?
-            ResultPath: "$.attachmentStatus"
+            ResultPath: $.attachmentStatus
           Attachments Deleted?:
             Type: Choice
             Choices:
-            - Variable: "$.attachmentStatus.Payload"
-              StringEquals: DELETED
-              Next: Delete Core Network
+              - Variable: $.attachmentStatus.Payload
+                StringEquals: DELETED
+                Next: Delete Core Network
             Default: Wait 1 minute
           Delete Core Network:
             Type: Task
             Resource: arn:aws:states:::lambda:invoke
             Parameters:
-              Payload.$: "$"
-              FunctionName: !GetAtt DeleteCoreDSMFunction.Arn
+              Payload.$: $
+              FunctionName:
+                Fn::GetAtt:
+                  - DeleteCoreDSMFunction
+                  - Arn
             Retry:
-            - ErrorEquals:
-              - Lambda.ServiceException
-              - Lambda.AWSLambdaException
-              - Lambda.SdkClientException
-              IntervalSeconds: 2
-              MaxAttempts: 6
-              BackoffRate: 2
+              - ErrorEquals:
+                  - Lambda.ServiceException
+                  - Lambda.AWSLambdaException
+                  - Lambda.SdkClientException
+                IntervalSeconds: 2
+                MaxAttempts: 6
+                BackoffRate: 2
             Next: Wait 1 Minute
-            ResultPath: "$.coreDeleteExecuted"
+            ResultPath: $.coreDeleteExecuted
           Wait 1 Minute:
             Type: Wait
             Seconds: 60
@@ -147,328 +142,172 @@ Resources:
             Type: Task
             Resource: arn:aws:states:::lambda:invoke
             Parameters:
-              Payload.$: "$"
-              FunctionName: !GetAtt GetCoreStatusDSMFunction.Arn
+              Payload.$: $
+              FunctionName:
+                Fn::GetAtt:
+                  - GetCoreStatusDSMFunction
+                  - Arn
             Retry:
-            - ErrorEquals:
-              - Lambda.ServiceException
-              - Lambda.AWSLambdaException
-              - Lambda.SdkClientException
-              IntervalSeconds: 2
-              MaxAttempts: 6
-              BackoffRate: 2
+              - ErrorEquals:
+                  - Lambda.ServiceException
+                  - Lambda.AWSLambdaException
+                  - Lambda.SdkClientException
+                IntervalSeconds: 2
+                MaxAttempts: 6
+                BackoffRate: 2
             Next: Core Network Deleted?
-            ResultPath: "$.coreStatus"
+            ResultPath: $.coreStatus
           Core Network Deleted?:
             Type: Choice
             Choices:
-            - Variable: "$.coreStatus.Payload"
-              StringEquals: DELETED
-              Next: Delete Global Network
+              - Variable: $.coreStatus.Payload
+                StringEquals: DELETED
+                Next: Delete Global Network
             Default: Wait 1 Minute
           Delete Global Network:
             Type: Task
             Resource: arn:aws:states:::lambda:invoke
             Parameters:
-              Payload.$: "$"
-              FunctionName: !GetAtt DeleteGlobalDSMFunction.Arn
+              Payload.$: $
+              FunctionName:
+                Fn::GetAtt:
+                  - DeleteGlobalDSMFunction
+                  - Arn
             Retry:
-            - ErrorEquals:
-              - Lambda.ServiceException
-              - Lambda.AWSLambdaException
-              - Lambda.SdkClientException
-              IntervalSeconds: 2
-              MaxAttempts: 6
-              BackoffRate: 2
-            ResultPath: "$.globalDeleteExecuted"
+              - ErrorEquals:
+                  - Lambda.ServiceException
+                  - Lambda.AWSLambdaException
+                  - Lambda.SdkClientException
+                IntervalSeconds: 2
+                MaxAttempts: 6
+                BackoffRate: 2
+            ResultPath: $.globalDeleteExecuted
             End: true
       Policies:
-      - LambdaInvokePolicy:
-          FunctionName: !Ref DescribeNetworkDSMFunction
-      - LambdaInvokePolicy:
-          FunctionName: !Ref DeleteAttachmentsDSMFunction
-      - LambdaInvokePolicy:
-          FunctionName: !Ref GetAttachmentStatusDSMFunction
-      - LambdaInvokePolicy:
-          FunctionName: !Ref DeleteCoreDSMFunction          
-      - LambdaInvokePolicy:
-          FunctionName: !Ref GetCoreStatusDSMFunction  
-      - LambdaInvokePolicy:
-          FunctionName: !Ref DeleteGlobalDSMFunction 
+        - LambdaInvokePolicy:
+            FunctionName:
+              Ref: DescribeNetworkDSMFunction
+        - LambdaInvokePolicy:
+            FunctionName:
+              Ref: DeleteAttachmentsDSMFunction
+        - LambdaInvokePolicy:
+            FunctionName:
+              Ref: GetAttachmentStatusDSMFunction
+        - LambdaInvokePolicy:
+            FunctionName:
+              Ref: DeleteCoreDSMFunction
+        - LambdaInvokePolicy:
+            FunctionName:
+              Ref: GetCoreStatusDSMFunction
+        - LambdaInvokePolicy:
+            FunctionName:
+              Ref: DeleteGlobalDSMFunction
       Events:
         UpdateNetworkRule:
           Type: EventBridgeRule
           Properties:
-            EventBusName: !Ref MerakiEventBus
+            EventBusName:
+              Ref: MerakiEventBus
             InputPath: $.detail
             Pattern:
               source:
                 - com.aws.merakicloudwanquickstart
               detail-type:
                 - Delete Cloud WAN resources requested
-     
-
-
-
-
-
   DeleteAttachmentsDSMFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.lambda_handler
       Runtime: python3.8
-      InlineCode: |
-        import json
-        import sys
-        from pip._internal import main
-        main(['install', '-I', '-q', 'boto3', '--target', '/tmp/', '--no-cache-dir', '--disable-pip-version-check'])
-        sys.path.insert(0,'/tmp/')
-        import boto3
-        from botocore.vendored import requests
-
-        client = boto3.client('networkmanager')
-
-        def lambda_handler(event, context):
-            #print(event)
-            print(event['networkDetails']['Payload'])
-            try:
-              attachments = event['networkDetails']['Payload']['Attachments']
-              #delete attachments
-              #if deleting state, pass , else fail
-              for attachment in attachments:
-                  #print(attachment)
-                  response = client.delete_attachment(AttachmentId=attachment)
-                  print(response)
-                  if response['Attachment']['State'] == 'DELETING':
-                      print('DELETING',attachment)
-                  else:
-                      #to-do: error handling
-                      print('ERROR',attachment)
-                      return('ERROR')
-            except Exception as e:
-                print(e)
-                print('No attachments to delete?')
-                #add specific error handling          
-
-            return('DELETING')
+      InlineCode: "import json\nimport sys\nfrom pip._internal import main\nmain(['install', '-I', '-q', 'boto3', '--target', '/tmp/', '--no-cache-dir', '--disable-pip-version-check'])\nsys.path.insert(0,'/tmp/')\n\
+        import boto3\nfrom botocore.vendored import requests\n \nclient = boto3.client('networkmanager')\n\ndef lambda_handler(event, context):\n    #print(event)\n    print(event['networkDetails']['Payload'])\n\
+        \    try:\n      attachments = event['networkDetails']['Payload']['Attachments']\n      #delete attachments\n      #if deleting state, pass , else fail\n      for attachment in attachments:\n  \
+        \        #print(attachment)\n          response = client.delete_attachment(AttachmentId=attachment)\n          print(response)\n          if response['Attachment']['State'] == 'DELETING':\n    \
+        \          print('DELETING',attachment)\n          else:\n              #to-do: error handling\n              print('ERROR',attachment)\n              return('ERROR')\n    except Exception as e:\n\
+        \        print(e)\n        print('No attachments to delete?')\n        #add specific error handling          \n\n    return('DELETING')\n"
       Policies:
-      - AWSNetworkManagerFullAccess
-      - AdministratorAccess
-      - AmazonEC2ReadOnlyAccess
-
-
+        - AWSNetworkManagerFullAccess
+        - AdministratorAccess
+        - AmazonEC2ReadOnlyAccess
   DeleteCoreDSMFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: index.lambda_handler    
+      Handler: index.lambda_handler
       Runtime: python3.8
-      InlineCode: |
-        import json
-        import sys
-        from pip._internal import main
-        main(['install', '-I', '-q', 'boto3', '--target', '/tmp/', '--no-cache-dir', '--disable-pip-version-check'])
-        sys.path.insert(0,'/tmp/')        
-        import boto3
-        from botocore.vendored import requests
-
-        client = boto3.client('networkmanager')
-
-        def lambda_handler(event, context):
-            print(event['networkDetails']['Payload']['CoreNetworkId'])
-            coreNetworkId = event['networkDetails']['Payload']['CoreNetworkId']
-            response = client.delete_core_network(CoreNetworkId=coreNetworkId)
-            print(response)
-            if response['CoreNetwork']['State'] == 'DELETING':
-                print('DELETING')
-                return('DELETING')
-            else:
-                #to-dp: write error handling
-                print('ERROR')
+      InlineCode: "import json\nimport sys\nfrom pip._internal import main\nmain(['install', '-I', '-q', 'boto3', '--target', '/tmp/', '--no-cache-dir', '--disable-pip-version-check'])\nsys.path.insert(0,'/tmp/')\
+        \        \nimport boto3\nfrom botocore.vendored import requests\n\nclient = boto3.client('networkmanager')\n\ndef lambda_handler(event, context):\n    print(event['networkDetails']['Payload']['CoreNetworkId'])\n\
+        \    coreNetworkId = event['networkDetails']['Payload']['CoreNetworkId']\n    response = client.delete_core_network(CoreNetworkId=coreNetworkId)\n    print(response)\n    if response['CoreNetwork']['State']\
+        \ == 'DELETING':\n        print('DELETING')\n        return('DELETING')\n    else:\n        #to-dp: write error handling\n        print('ERROR')\n"
       Policies:
-      - AWSNetworkManagerFullAccess
-      - AdministratorAccess
-      - AmazonEC2ReadOnlyAccess
-
-
+        - AWSNetworkManagerFullAccess
+        - AdministratorAccess
+        - AmazonEC2ReadOnlyAccess
   DeleteGlobalDSMFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: index.lambda_handler 
-      Runtime: python3.8   
-      InlineCode: |
-        import json
-        import sys
-        from pip._internal import main
-        main(['install', '-I', '-q', 'boto3', '--target', '/tmp/', '--no-cache-dir', '--disable-pip-version-check'])
-        sys.path.insert(0,'/tmp/')            
-        import boto3
-        from botocore.vendored import requests
-
-        client = boto3.client('networkmanager')
-
-        def lambda_handler(event, context):
-            globalNetworkId = event['networkDetails']['Payload']['GlobalNetworkId']
-            try:
-                response = client.delete_global_network(GlobalNetworkId=globalNetworkId)
-                print(response)
-            
-            except Exception as e:
-                print(e)
+      Handler: index.lambda_handler
+      Runtime: python3.8
+      InlineCode: "import json\nimport sys\nfrom pip._internal import main\nmain(['install', '-I', '-q', 'boto3', '--target', '/tmp/', '--no-cache-dir', '--disable-pip-version-check'])\nsys.path.insert(0,'/tmp/')\
+        \            \nimport boto3\nfrom botocore.vendored import requests\n\nclient = boto3.client('networkmanager')\n\ndef lambda_handler(event, context):\n    globalNetworkId = event['networkDetails']['Payload']['GlobalNetworkId']\n\
+        \    try:\n        response = client.delete_global_network(GlobalNetworkId=globalNetworkId)\n        print(response)\n    \n    except Exception as e:\n        print(e)\n"
       Policies:
-      - AWSNetworkManagerFullAccess
-      - AdministratorAccess
-      - AmazonEC2ReadOnlyAccess
-
-
+        - AWSNetworkManagerFullAccess
+        - AdministratorAccess
+        - AmazonEC2ReadOnlyAccess
   DescribeNetworkDSMFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: index.lambda_handler  
-      Runtime: python3.8  
-      InlineCode: |
-        import json
-        import sys
-        from pip._internal import main
-        main(['install', '-I', '-q', 'boto3', '--target', '/tmp/', '--no-cache-dir', '--disable-pip-version-check'])
-        sys.path.insert(0,'/tmp/')          
-        from botocore.vendored import requests
-        import boto3
-
-        client = boto3.client('networkmanager')
-
-
-        def lambda_handler(event, context):
-            print('Event: {}'.format(event))
-            network={}
-            try:
-                #get GlobalNetworkID based upon predefined tag
-                response = client.describe_global_networks()
-                for gn in response['GlobalNetworks']:
-                    for tag in gn['Tags']:
-                        if tag['Key'] == 'Name' and tag['Value'] == event['network_name']:
-                            print('Global NetworkID: ' + gn['GlobalNetworkId'])
-                            print('tag: '+ tag['Key'], tag['Value'])
-                            network['GlobalNetworkId'] = gn['GlobalNetworkId']
-                
-                
-                #get the proper core network associated with the GlobalNetworkID
-                response = client.list_core_networks()
-                for core in response['CoreNetworks']:
-                    #is try/except the proper way to do this?
-                    #not all items returned will have a global network, so it will throw an error without try/except
-                    try: 
-                        if core['GlobalNetworkId'] == network['GlobalNetworkId']:
-                            #print(core['CoreNetworkId'])
-                            network['CoreNetworkId'] = core['CoreNetworkId']
-                    except:
-                        #print('global network not found')
-                        pass
-                
-                network['Attachments'] = [] #create list to include multiple attachments
-                response = client.list_attachments(CoreNetworkId=network['CoreNetworkId'])
-                for attachment in response['Attachments']:
-                    #print(attachment)
-                    try: 
-                        # if attachment['SegmentName'] == 'sdwan':
-                        #     #print(attachment['AttachmentId'])
-                        #     network['Attachments'].append(attachment['AttachmentId'])
-                        #Since CoreNetwork is unique to the Meraki Global Network...
-                        #It is safe to assume that all attachments can be deleted.
-                        network['Attachments'].append(attachment['AttachmentId'])
-                    except:
-                        #print('SegmentName not found')
-                        pass                
-                
-                
-                #add error logic if network not found
-                print(network)
-                return(network)
-                
-            except Exception as e:
-                print(e)
-                #requests_data=json.dumps(dict(Status='FAILURE',Reason='Exception: %s' % e,UniqueId='DeleteStateMachine',Data=event['ResourceProperties'])).encode('utf-8')
-                #response = requests.put(event['ResourceProperties']['WaitHandle'], data=requests_data, headers={'Content-Type':''})
-                #print (response)    
+      Handler: index.lambda_handler
+      Runtime: python3.8
+      InlineCode: "import json\nimport sys\nfrom pip._internal import main\nmain(['install', '-I', '-q', 'boto3', '--target', '/tmp/', '--no-cache-dir', '--disable-pip-version-check'])\nsys.path.insert(0,'/tmp/')\
+        \          \nfrom botocore.vendored import requests\n import boto3\n\nclient = boto3.client('networkmanager')\n\n\ndef lambda_handler(event, context):\n    print('Event: {}'.format(event))\n   \
+        \ network={}\n    try:\n        #get GlobalNetworkID based upon predefined tag\n        response = client.describe_global_networks()\n        for gn in response['GlobalNetworks']:\n            for\
+        \ tag in gn['Tags']:\n                if tag['Key'] == 'Name' and tag['Value'] == event['network_name']:\n                    print('Global NetworkID: ' + gn['GlobalNetworkId'])\n              \
+        \      print('tag: '+ tag['Key'], tag['Value'])\n                    network['GlobalNetworkId'] = gn['GlobalNetworkId']\n        \n        \n        #get the proper core network associated with\
+        \ the GlobalNetworkID\n        response = client.list_core_networks()\n        for core in response['CoreNetworks']:\n            #is try/except the proper way to do this?\n            #not all\
+        \ items returned will have a global network, so it will throw an error without try/except\n            try: \n                if core['GlobalNetworkId'] == network['GlobalNetworkId']:\n        \
+        \            #print(core['CoreNetworkId'])\n                    network['CoreNetworkId'] = core['CoreNetworkId']\n            except:\n                #print('global network not found')\n      \
+        \          pass\n        \n        network['Attachments'] = [] #create list to include multiple attachments\n        response = client.list_attachments(CoreNetworkId=network['CoreNetworkId'])\n\
+        \        for attachment in response['Attachments']:\n            #print(attachment)\n            try: \n                # if attachment['SegmentName'] == 'sdwan':\n                #     #print(attachment['AttachmentId'])\n\
+        \                #     network['Attachments'].append(attachment['AttachmentId'])\n                #Since CoreNetwork is unique to the Meraki Global Network...\n                #It is safe to assume\
+        \ that all attachments can be deleted.\n                network['Attachments'].append(attachment['AttachmentId'])\n            except:\n                #print('SegmentName not found')\n        \
+        \        pass                \n        \n        \n        #add error logic if network not found\n        print(network)\n        return(network)\n        \n    except Exception as e:\n        print(e)\n\
+        \        #requests_data=json.dumps(dict(Status='FAILURE',Reason='Exception: %s' % e,UniqueId='DeleteStateMachine',Data=event['ResourceProperties'])).encode('utf-8')\n        #response = requests.put(event['ResourceProperties']['WaitHandle'],\
+        \ data=requests_data, headers={'Content-Type':''})\n        #print (response)    \n"
       Policies:
-      - AWSNetworkManagerFullAccess
-      - AdministratorAccess
-      - AmazonEC2ReadOnlyAccess
-
+        - AWSNetworkManagerFullAccess
+        - AdministratorAccess
+        - AmazonEC2ReadOnlyAccess
   GetAttachmentStatusDSMFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.lambda_handler
       Runtime: python3.8
-      InlineCode: |
-        import json
-        import sys
-        from pip._internal import main
-        main(['install', '-I', '-q', 'boto3', '--target', '/tmp/', '--no-cache-dir', '--disable-pip-version-check'])
-        sys.path.insert(0,'/tmp/')          
-        from botocore.vendored import requests
-        import boto3
-
-        client = boto3.client('networkmanager')
-
-        def lambda_handler(event, context):
-            print(event)
-            print(event['networkDetails']['Payload']['CoreNetworkId'])
-            coreNetworkId = event['networkDetails']['Payload']['CoreNetworkId']
-            response = client.list_attachments(CoreNetworkId=coreNetworkId)
-            print(response)
-            for attachment in response['Attachments']:
-                print(attachment)
-
-            if response['Attachments']:
-                print('WAITING')
-                return('WAITING')
-            else:
-                print('DELETED')
-                return('DELETED')
-
-
+      InlineCode: "import json\nimport sys\nfrom pip._internal import main\nmain(['install', '-I', '-q', 'boto3', '--target', '/tmp/', '--no-cache-dir', '--disable-pip-version-check'])\nsys.path.insert(0,'/tmp/')\
+        \          \nfrom botocore.vendored import requests\n import boto3\n\nclient = boto3.client('networkmanager')\n\ndef lambda_handler(event, context):\n    print(event)\n    print(event['networkDetails']['Payload']['CoreNetworkId'])\n\
+        \    coreNetworkId = event['networkDetails']['Payload']['CoreNetworkId']\n    response = client.list_attachments(CoreNetworkId=coreNetworkId)\n    print(response)\n    for attachment in response['Attachments']:\n\
+        \        print(attachment)\n\n    if response['Attachments']:\n        print('WAITING')\n        return('WAITING')\n    else:\n        print('DELETED')\n        return('DELETED')\n"
       Policies:
-      - AWSNetworkManagerFullAccess
-      - AdministratorAccess
-      - AmazonEC2ReadOnlyAccess
-
+        - AWSNetworkManagerFullAccess
+        - AdministratorAccess
+        - AmazonEC2ReadOnlyAccess
   GetCoreStatusDSMFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.lambda_handler
       Runtime: python3.8
-      InlineCode: |
-        import json
-        import sys
-        from pip._internal import main
-        main(['install', '-I', '-q', 'boto3', '--target', '/tmp/', '--no-cache-dir', '--disable-pip-version-check'])
-        sys.path.insert(0,'/tmp/')         
-        import boto3
-        from botocore.vendored import requests
-
-        client = boto3.client('networkmanager')
-
-        def lambda_handler(event, context):
-            coreNetworkId = event['networkDetails']['Payload']['CoreNetworkId']
-            response = client.list_core_networks()
-            for core in response['CoreNetworks']:
-                if core['CoreNetworkId'] == coreNetworkId:
-                    print('WAITING')
-                    return('WAITING')
-            print('DELETED')
-            return('DELETED')
-
+      InlineCode: "import json\nimport sys\nfrom pip._internal import main\nmain(['install', '-I', '-q', 'boto3', '--target', '/tmp/', '--no-cache-dir', '--disable-pip-version-check'])\nsys.path.insert(0,'/tmp/')\
+        \         \nimport boto3\nfrom botocore.vendored import requests\n\nclient = boto3.client('networkmanager')\n\ndef lambda_handler(event, context):\n    coreNetworkId = event['networkDetails']['Payload']['CoreNetworkId']\n\
+        \    response = client.list_core_networks()\n    for core in response['CoreNetworks']:\n        if core['CoreNetworkId'] == coreNetworkId:\n            print('WAITING')\n            return('WAITING')\n\
+        \    print('DELETED')\n    return('DELETED')\n"
       Policies:
-      - AWSNetworkManagerFullAccess
-      - AdministratorAccess
-      - AmazonEC2ReadOnlyAccess
-
-
-##End of Delete State Machine Resources
-##
-##
-
+        - AWSNetworkManagerFullAccess
+        - AdministratorAccess
+        - AmazonEC2ReadOnlyAccess
 Outputs:
   MerakiEventBusArn:
     Description: The ARN of the central event bus
-    Value: !GetAtt MerakiEventBus.Arn
+    Value:
+      Fn::GetAtt:
+        - MerakiEventBus
+        - Arn
