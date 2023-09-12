@@ -77,7 +77,7 @@ Resources:
       Timeout: 300
       Code:
         ZipFile:
-          Fn::Sub: "import boto3\nimport json\nimport cfnresponse\nimport os\nfrom botocore.vendored import requests\n\nregion = os.environ['AWS_REGION']\n\n\n\ndef handler(event, context):\n  print('Received\
+          Fn::Sub: "import boto3\nimport json\nimport cfnresponse\nimport os\nfrom botocore.vendored import requests\n\nregion = os.environ['AWS_REGION']\n \n\n\ndef handler(event, context):\n  print('Received\
             \ event: %s' % json.dumps(event))\n  status = cfnresponse.SUCCESS\n  responseData = {}\n  \n  EventBusName = event['ResourceProperties']['EventBusName']\n  vpc_arn = event['ResourceProperties']['VPCArn']\n\
             \  az1_subnet_arns = event['ResourceProperties']['Az1SubnetArn']\n  az2_subnet_arns = event['ResourceProperties']['Az2SubnetArn']\n  subnet_arns = [az1_subnet_arns, az2_subnet_arns]\n  global_network_name\
             \ = event['ResourceProperties']['GlobalNetworkName']\n  base_region_name = event['ResourceProperties']['BaseRegionName']\n\n  aws_client = boto3.client('events', region_name=base_region_name)\n\
@@ -116,3 +116,4 @@ Resources:
             - EIAMPolicyActionWildcard
           ignore_reasons:
             - EIAMPolicyActionWildcard: Intent assumed for initial migration.
+Outputs: {}

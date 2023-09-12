@@ -324,3 +324,6 @@ Outputs:
   Postdeployment:
     Description: See the deployment guide for postdeployment steps.
     Value: https://aws-quickstart.github.io/quickstart-cisco-meraki-vmx-cloudwan/
+  GlobalNetworkName:
+    Value:
+      Ref: GlobalNetworkName

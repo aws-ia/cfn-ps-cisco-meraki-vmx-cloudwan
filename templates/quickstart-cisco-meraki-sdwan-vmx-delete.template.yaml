@@ -311,3 +311,9 @@ Outputs:
       Fn::GetAtt:
         - MerakiEventBus
         - Arn
+  QSS3KeyPrefix:
+    Value:
+      Ref: QSS3KeyPrefix
+  QSS3BucketRegion:
+    Value:
+      Ref: QSS3BucketRegion
