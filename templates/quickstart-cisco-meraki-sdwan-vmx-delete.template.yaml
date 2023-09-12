@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
 Description: "This stack is used to create the EventBus as well as all the components needed to delete Cloud WAN resources.  This stack is set to remain after deletion of the parent stack so that the long\
-  \ running delete state machine can complete running.  This stack must manually be deleted after no Cloud WN resources remain.\n"
+  \ running delete state machine can complete running.  This stack must manually be deleted after no Cloud WN resources remain.\n (qs-1ui8pid07)"
 Globals:
   Function:
     Handler: app.lambda_handler
