@@ -316,7 +316,7 @@ Resources:
             Action:
               - sts:AssumeRole
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Path: /
   CreateStateMachine:
     Type: AWS::Serverless::StateMachine
@@ -435,7 +435,7 @@ Resources:
             Default: Wait 60 seconds for execute network policy changeset
           CallBack Lambda:
             Type: Task
-            Resource: arn:aws:states:::lambda:invoke
+            Resource: !Sub arn:${AWS::Partition}:states:::lambda:invoke
             Parameters:
               Payload.$: $
               FunctionName:
@@ -526,7 +526,7 @@ Resources:
                 Action:
                   - states:StartExecution
                 Resource:
-                  - arn:aws:states:*:*:stateMachine:*
+                  - !Sub arn:${AWS::Partition}:states:*:*:stateMachine:*
   CreateNetworkNewRegion:
     Type: AWS::Serverless::StateMachine
     Properties:
@@ -855,19 +855,19 @@ Resources:
         Ref: MerakiEventBusName
       Az1SubnetArn:
         Fn::Sub:
-          - arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:subnet/${AZ1SubnetID}
+          - arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:subnet/${AZ1SubnetID}
           - AZ1SubnetID:
               Ref: AvailabilityZone1SubnetID
       Az2SubnetArn:
         Fn::Sub:
-          - arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:subnet/${AZ2SubnetID}
+          - arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:subnet/${AZ2SubnetID}
           - AZ2SubnetID:
               Ref: AvailabilityZone2SubnetID
       VPCId:
         Ref: VPCID
       VPCArn:
         Fn::Sub:
-          - arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:vpc/${VPC_ID}
+          - arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:vpc/${VPC_ID}
           - VPC_ID:
               Ref: VPCID
       GlobalNetworkName:
@@ -914,7 +914,7 @@ Resources:
             Action:
               - sts:AssumeRole
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Path: /
       Policies:
         - PolicyName: root
