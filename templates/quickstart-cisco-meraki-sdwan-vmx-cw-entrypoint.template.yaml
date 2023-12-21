@@ -224,6 +224,7 @@ Resources:
         VPCCIDR:
           Ref: VPCCIDR
         CreatePrivateSubnets: false
+        CreateNATGateways: false
   WorkloadStack:
     DependsOn: VPCStack
     Type: AWS::CloudFormation::Stack
