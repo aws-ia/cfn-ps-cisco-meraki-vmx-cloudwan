@@ -5,3 +5,7 @@
 	path = submodules/cfn-ps-aws-vpc
 	url = https://github.com/aws-ia/cfn-ps-aws-vpc.git
 	branch = main
+[submodule "submodules/cfn-ps-cisco-meraki-sd-wan-vmx"]
+	path = submodules/cfn-ps-cisco-meraki-sd-wan-vmx
+	url = https://github.com/aws-quickstart/quickstart-cisco-meraki-sd-wan-vmx.git
+	branch = main

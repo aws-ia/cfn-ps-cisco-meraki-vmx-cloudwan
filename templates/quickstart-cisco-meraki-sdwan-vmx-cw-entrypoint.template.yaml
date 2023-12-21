@@ -215,8 +215,6 @@ Resources:
           Fn::Join:
             - ','
             - Ref: AvailabilityZones
-        KeyPairName:
-          Ref: KeyPairName
         NumberOfAZs:
           Ref: NumberOfvMXs
         PublicSubnet1CIDR:
@@ -226,6 +224,7 @@ Resources:
         VPCCIDR:
           Ref: VPCCIDR
         CreatePrivateSubnets: false
+        CreateNATGateways: false
   WorkloadStack:
     DependsOn: VPCStack
     Type: AWS::CloudFormation::Stack
