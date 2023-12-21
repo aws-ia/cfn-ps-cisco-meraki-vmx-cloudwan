@@ -215,8 +215,6 @@ Resources:
           Fn::Join:
             - ','
             - Ref: AvailabilityZones
-        KeyPairName:
-          Ref: KeyPairName
         NumberOfAZs:
           Ref: NumberOfvMXs
         PublicSubnet1CIDR:
